@@ -14,6 +14,12 @@ const DriverPage = () => {
 
     const watchIdRef = useRef(null);
     const intervalIdRef = useRef(null);
+    const locationRef = useRef(null);
+
+    // Keep ref in sync for interval
+    useEffect(() => {
+        locationRef.current = currentLocation;
+    }, [currentLocation]);
 
     const tabs = [
         { id: 'status', label: 'Status', icon: '🚌' },
@@ -56,10 +62,11 @@ const DriverPage = () => {
             // Request permission and start watching
             watchIdRef.current = navigator.geolocation.watchPosition(
                 (position) => {
-                    setCurrentLocation({
+                    const newLoc = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
-                    });
+                    };
+                    setCurrentLocation(newLoc);
                     setLocationError('');
                 },
                 (error) => {
@@ -86,10 +93,10 @@ const DriverPage = () => {
                 }
             );
 
-            // Set up interval to send location every 10 seconds
+            // Set up interval to send location every 10 seconds (Fallback)
             intervalIdRef.current = setInterval(() => {
-                if (currentLocation) {
-                    sendLocationToServer();
+                if (locationRef.current) {
+                    sendLocationToServer(locationRef.current);
                 }
             }, 10000);
 
@@ -111,11 +118,12 @@ const DriverPage = () => {
         }
     };
 
-    const sendLocationToServer = async () => {
-        if (!currentLocation) return;
+    const sendLocationToServer = async (manualLoc = null) => {
+        const loc = manualLoc || currentLocation;
+        if (!loc) return;
 
         try {
-            await busAPI.updateLocation(currentLocation.lat, currentLocation.lng);
+            await busAPI.updateLocation(loc.lat, loc.lng);
             setLastUpdate(new Date());
         } catch (error) {
             console.error('Failed to update location:', error);
@@ -337,8 +345,8 @@ const DriverPage = () => {
                                                         <div key={index} className="relative">
                                                             {/* Marker Circle */}
                                                             <div className={`absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-4 border-white z-10 shadow-sm ${isFirst ? 'bg-green-500 ring-4 ring-green-100' :
-                                                                    isLast ? 'bg-red-500 ring-4 ring-red-100' :
-                                                                        'bg-blue-500 ring-4 ring-blue-100'
+                                                                isLast ? 'bg-red-500 ring-4 ring-red-100' :
+                                                                    'bg-blue-500 ring-4 ring-blue-100'
                                                                 }`}></div>
 
                                                             <div className="flex justify-between items-start">

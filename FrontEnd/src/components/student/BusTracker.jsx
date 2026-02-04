@@ -8,32 +8,75 @@ const BusTracker = ({ buses }) => {
     const [studentLocation, setStudentLocation] = useState(null);
     const [lastUpdated, setLastUpdated] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [stopArrivals, setStopArrivals] = useState([]);
     const socketRef = useRef(null);
+    const selectedBusRef = useRef(null);
+
+    // Keep ref in sync for socket event handlers
+    useEffect(() => {
+        selectedBusRef.current = selectedBus;
+    }, [selectedBus]);
 
     useEffect(() => {
-        const socketUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-        socketRef.current = io(socketUrl);
+        // Initialize socket once on mount
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const socketUrl = apiUrl.split('/api')[0];
 
-        socketRef.current.on('connect', () => {
-            console.log('Connected to socket server');
+        console.log('🔌 Connecting to socket server at:', socketUrl);
+
+        const socket = io(socketUrl, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 10,
+            reconnectionDelay: 2000,
+            withCredentials: false
         });
 
-        socketRef.current.on('location-update', (data) => {
-            if (selectedBus && data.busId === selectedBus._id) {
-                setBusLocation({
-                    lat: data.location.latitude,
-                    lng: data.location.longitude,
-                });
-                setLastUpdated(new Date());
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+            console.log('✅ Socket connected:', socket.id);
+            if (selectedBusRef.current) {
+                console.log('🔄 Re-joining bus room:', selectedBusRef.current._id);
+                socket.emit('join-bus', selectedBusRef.current._id.toString());
             }
+        });
+
+        socket.on('location-update', (data) => {
+            console.log('📍 Location update received for bus:', data.busId);
+            const currentBusId = selectedBusRef.current?._id?.toString();
+            const incomingBusId = data.busId?.toString();
+
+            if (currentBusId && incomingBusId === currentBusId) {
+                console.log('✅ Match! Updating location for:', currentBusId);
+                if (data.location?.latitude) {
+                    setBusLocation({
+                        lat: parseFloat(data.location.latitude),
+                        lng: parseFloat(data.location.longitude),
+                    });
+                }
+                if (data.stopArrivals) {
+                    setStopArrivals(data.stopArrivals);
+                }
+                setLastUpdated(new Date());
+            } else {
+                console.log('⏭️ Ignoring update for mismatch:', { current: currentBusId, incoming: incomingBusId });
+            }
+        });
+
+        socket.on('connect_error', (err) => {
+            console.error('❌ Socket Connection Error:', err.message);
+        });
+
+        socket.on('disconnect', (reason) => {
+            console.log('🔌 Socket disconnected:', reason);
         });
 
         return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
+            console.log('🧹 Cleaning up socket connection');
+            socket.disconnect();
         };
-    }, [selectedBus]);
+    }, []); // Only on mount
 
     useEffect(() => {
         if (!navigator.geolocation) return;
@@ -55,12 +98,14 @@ const BusTracker = ({ buses }) => {
     useEffect(() => {
         if (!selectedBus) {
             setBusLocation(null);
+            setStopArrivals([]);
             return;
         }
 
-        // Join the room for the specific bus
-        if (socketRef.current) {
-            socketRef.current.emit('join-bus', selectedBus._id);
+        // Emit join event whenever bus selection changes
+        if (socketRef.current && socketRef.current.connected) {
+            console.log('📢 Joining room for bus:', selectedBus.busNumber, selectedBus._id);
+            socketRef.current.emit('join-bus', selectedBus._id.toString());
         }
 
         const fetchLocation = async () => {
@@ -76,44 +121,28 @@ const BusTracker = ({ buses }) => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    if (data.success && data.data && data.data.latitude && data.data.longitude) {
-                        setBusLocation({
-                            lat: data.data.latitude,
-                            lng: data.data.longitude,
-                        });
-                        setLastUpdated(new Date());
-                    }
-                } else {
-                    if (selectedBus.currentLocation) {
-                        setBusLocation({
-                            lat: selectedBus.currentLocation.latitude || selectedBus.currentLocation.lat,
-                            lng: selectedBus.currentLocation.longitude || selectedBus.currentLocation.lng,
-                        });
+                    if (data.success && data.data) {
+                        console.log('📂 Fetched initial state:', data.data);
+                        if (data.data.location?.latitude) {
+                            setBusLocation({
+                                lat: parseFloat(data.data.location.latitude),
+                                lng: parseFloat(data.data.location.longitude),
+                            });
+                        }
+                        if (data.data.stopArrivals) {
+                            setStopArrivals(data.data.stopArrivals);
+                        }
                         setLastUpdated(new Date());
                     }
                 }
             } catch (error) {
                 console.error('Error fetching initial bus location:', error);
-                if (selectedBus.currentLocation) {
-                    setBusLocation({
-                        lat: selectedBus.currentLocation.latitude || selectedBus.currentLocation.lat,
-                        lng: selectedBus.currentLocation.longitude || selectedBus.currentLocation.lng,
-                    });
-                }
             }
         };
 
         setIsLoading(true);
         fetchLocation().finally(() => setIsLoading(false));
     }, [selectedBus]);
-
-    const getMapUrl = (lat, lng) => {
-        return `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`;
-    };
-
-    const openInMaps = (lat, lng) => {
-        window.open(`https://www.google.com/maps?q=${lat},${lng}&z=15`, '_blank');
-    };
 
     if (buses.length === 0) {
         return (
@@ -127,7 +156,6 @@ const BusTracker = ({ buses }) => {
 
     return (
         <div className="flex flex-col h-full">
-            {/* Bus Selector - Horizontal Scroll on Mobile */}
             {!selectedBus && (
                 <div className="p-4">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Select a Bus to Track</h2>
@@ -168,12 +196,12 @@ const BusTracker = ({ buses }) => {
                 </div>
             )}
 
-            {/* RedBus-Style Tracking View */}
             {selectedBus && (
                 <BusTrackingView
                     bus={selectedBus}
                     busLocation={busLocation}
                     studentLocation={studentLocation}
+                    stopArrivals={stopArrivals}
                     lastUpdated={lastUpdated}
                     isLoading={isLoading}
                     onBack={() => setSelectedBus(null)}

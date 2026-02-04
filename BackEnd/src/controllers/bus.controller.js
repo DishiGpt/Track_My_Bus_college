@@ -126,23 +126,28 @@ exports.deleteBus = async (req, res) => {
   }
 };
 
+// Helper to calculate distance
+const calculateDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371; // km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) *
+    Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
 // Update bus location (called by driver app)
 exports.updateBusLocation = async (req, res) => {
   try {
     const { latitude, longitude } = req.body;
 
-    // First, update the bus location
-    const bus = await Bus.findOneAndUpdate(
-      { driver: req.userId },
-      {
-        currentLocation: {
-          latitude,
-          longitude,
-          timestamp: new Date(),
-        },
-      },
-      { new: true }
-    );
+    // Find the bus and populate route to check waypoints
+    const bus = await Bus.findOne({ driver: req.userId }).populate('route');
 
     if (!bus) {
       return res.status(404).json({
@@ -151,19 +156,63 @@ exports.updateBusLocation = async (req, res) => {
       });
     }
 
-    // Emit socket event for real-time updates (if socket.io is configured)
+    // Update current location
+    bus.currentLocation = {
+      latitude,
+      longitude,
+      timestamp: new Date(),
+    };
+
+    // Check for stop arrivals
+    if (bus.route && bus.route.waypoints) {
+      const arrivedStops = bus.stopArrivals || [];
+
+      bus.route.waypoints.forEach((wp) => {
+        const dist = calculateDistance(
+          latitude,
+          longitude,
+          wp.latitude,
+          wp.longitude
+        );
+
+        // Within 200m and not already logged for today
+        const alreadyLogged = arrivedStops.some(
+          (log) =>
+            log.stopId?.toString() === wp._id?.toString() &&
+            new Date(log.arrivalTime).toDateString() === new Date().toDateString()
+        );
+
+        if (dist < 0.2 && !alreadyLogged) {
+          arrivedStops.push({
+            stopName: wp.name,
+            arrivalTime: new Date(),
+            stopId: wp._id,
+          });
+        }
+      });
+
+      bus.stopArrivals = arrivedStops;
+    }
+
+    await bus.save();
+
+    // Emit socket event for real-time updates
     const io = req.app.get('io');
     if (io) {
       io.to(`bus:${bus._id}`).emit('location-update', {
         busId: bus._id,
         location: bus.currentLocation,
+        stopArrivals: bus.stopArrivals, // Send arrival updates too
       });
     }
 
     res.json({
       success: true,
       message: 'Location updated successfully',
-      data: bus.currentLocation,
+      data: {
+        location: bus.currentLocation,
+        stopArrivals: bus.stopArrivals,
+      },
     });
   } catch (error) {
     res.status(500).json({
@@ -177,11 +226,17 @@ exports.updateBusLocation = async (req, res) => {
 // in bus.controller.js
 exports.getBusLocation = async (req, res, next) => {
   try {
-    const bus = await Bus.findById(req.params.id).select('currentLocation busNumber');
+    const bus = await Bus.findById(req.params.id).select('currentLocation stopArrivals busNumber');
     if (!bus) {
       return res.status(404).json({ success: false, message: 'Bus not found' });
     }
-    res.json({ success: true, data: bus.currentLocation });
+    res.json({
+      success: true,
+      data: {
+        location: bus.currentLocation,
+        stopArrivals: bus.stopArrivals
+      }
+    });
   } catch (err) {
     next(err);
   }

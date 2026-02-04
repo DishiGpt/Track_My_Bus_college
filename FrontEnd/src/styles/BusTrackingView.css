@@ -319,3 +319,43 @@
 .tracking-map-container iframe {
     animation: refresh-pulse 10s ease-in-out infinite;
 }
+
+/* Offline/Fallback Styles */
+.live-badge.offline {
+    background: #94a3b8;
+}
+
+.live-dot.gray {
+    background: #cbd5e1;
+}
+
+.eta-card.offline {
+    border-left: 4px solid #94a3b8;
+}
+
+.custom-stop-marker {
+    background: transparent;
+    border: none;
+}
+
+.stop-dot {
+    width: 10px;
+    height: 10px;
+    background: white;
+    border: 3px solid #64748b;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.custom-stop-marker.passed .stop-dot {
+    border-color: #10b981;
+    background: #10b981;
+}
+
+.custom-stop-marker.current .stop-dot {
+    border-color: #10b981;
+    background: #10b981;
+    width: 12px;
+    height: 12px;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+}

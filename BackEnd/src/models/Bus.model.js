@@ -43,6 +43,13 @@ const busSchema = new mongoose.Schema(
       enum: ['active', 'inactive', 'maintenance'],
       default: 'active',
     },
+    stopArrivals: [
+      {
+        stopName: String,
+        arrivalTime: Date,
+        stopId: mongoose.Schema.Types.ObjectId, // For waypoint matching
+      },
+    ],
   },
   { timestamps: true }
 );
