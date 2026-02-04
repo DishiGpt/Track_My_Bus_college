@@ -13,304 +13,301 @@ const seedData = async () => {
         await mongoose.connect(process.env.MONGODB_URI);
         console.log('✓ Connected to MongoDB');
 
-        // Clear existing data (optional - comment out if you want to keep existing data)
+        // Clear existing data
         await User.deleteMany({});
         await Route.deleteMany({});
         await Bus.deleteMany({});
         await Broadcast.deleteMany({});
-        console.log('✓ Cleared existing data');
+        console.log('✓ Cleared ALL existing data');
 
         // ============ USERS ============
 
-        // Admin Users
+        // 1. Admin & Coordinators
         const admin = await User.create({
             name: 'Super Admin',
-            phone: '9999999999',
-            email: 'admin@trackmybus.com',
+            phone: '8529657145',
             role: 'admin',
             isVerified: true,
             profileComplete: true,
         });
-        console.log('✓ Created Admin:', admin.name);
 
-        // Coordinators
         const coordinator1 = await User.create({
-            name: 'Rahul Sharma',
-            phone: '9876543210',
-            email: 'rahul.coordinator@trackmybus.com',
+            name: 'Raj Singh',
+            phone: '7665166735',
             role: 'coordinator',
             isVerified: true,
             profileComplete: true,
         });
 
-        const coordinator2 = await User.create({
-            name: 'Priya Verma',
-            phone: '9876543211',
-            email: 'priya.coordinator@trackmybus.com',
-            role: 'coordinator',
-            isVerified: true,
-            profileComplete: true,
-        });
-        console.log('✓ Created 2 Coordinators');
+        console.log('✓ Created Admin and Coordinator');
 
-        // Drivers
-        const driver1 = await User.create({
-            name: 'Ramesh Kumar',
-            phone: '9123456780',
-            email: 'ramesh.driver@trackmybus.com',
+        // 2. Real Drivers (From PDF)
+        const driverBus6 = await User.create({
+            name: 'Bheru Lal Ji',
+            phone: '8696932793',
             role: 'driver',
             isVerified: true,
             profileComplete: true,
         });
 
-        const driver2 = await User.create({
-            name: 'Suresh Yadav',
-            phone: '9123456781',
-            email: 'suresh.driver@trackmybus.com',
+        const driverBus9 = await User.create({
+            name: 'Mushtaq Ji',
+            phone: '8696932791',
             role: 'driver',
             isVerified: true,
             profileComplete: true,
         });
 
-        const driver3 = await User.create({
-            name: 'Mahesh Singh',
-            phone: '9123456782',
-            email: 'mahesh.driver@trackmybus.com',
+        const driverBus10 = await User.create({
+            name: 'Bhanwar Singh Ji',
+            phone: '8285314292',
             role: 'driver',
             isVerified: true,
             profileComplete: true,
         });
 
-        const driver4 = await User.create({
-            name: 'Dinesh Patel',
-            phone: '9123456783',
-            email: 'dinesh.driver@trackmybus.com',
+        const driverBus4 = await User.create({
+            name: 'Narayan Singh',
+            phone: '8107799177',
             role: 'driver',
             isVerified: true,
             profileComplete: true,
         });
-        console.log('✓ Created 4 Drivers');
+        console.log('✓ Created 4 Real Drivers from PDF');
 
-        // Students
+        // 3. Students
         const students = await User.insertMany([
-            {
-                name: 'Arjun Mehta',
-                phone: '8529657145',
-                email: 'arjun.student@college.edu',
-                role: 'student',
-                isVerified: true,
-                profileComplete: true,
-            },
-            {
-                name: 'Sneha Gupta',
-                phone: '9784357844',
-                email: 'sneha.student@college.edu',
-                role: 'student',
-                isVerified: true,
-                profileComplete: true,
-            },
-            {
-                name: 'Vikram Joshi',
-                phone: '7896541230',
-                email: 'vikram.student@college.edu',
-                role: 'student',
-                isVerified: true,
-                profileComplete: true,
-            },
-            {
-                name: 'Pooja Agarwal',
-                phone: '7896541231',
-                email: 'pooja.student@college.edu',
-                role: 'student',
-                isVerified: true,
-                profileComplete: true,
-            },
-            {
-                name: 'Rohan Kapoor',
-                phone: '7896541232',
-                email: 'rohan.student@college.edu',
-                role: 'student',
-                isVerified: true,
-                profileComplete: true,
-            },
+            { name: 'Arjun Mehta', phone: '9529657145', role: 'student', isVerified: true, profileComplete: true },
+            { name: 'Sneha Gupta', phone: '9784357845', role: 'student', isVerified: true, profileComplete: true },
+            { name: 'Devika Sajeev', phone: '9784357844', role: 'student', isVerified: true, profileComplete: true },
         ]);
-        console.log('✓ Created 5 Students');
 
-        // ============ ROUTES ============
+        // ============ ROUTES WITH REAL SCHEDULE DATA ============
 
-        const route1 = await Route.create({
-            name: 'Route A - City Center',
-            startingPoint: 'Railway Station',
-            routeDetails: 'Railway Station → MG Road → City Mall → Bus Stand → College Campus',
+        // Route for Bus 6 (Driver: Bheru Lal Ji)
+        const routeBus6 = await Route.create({
+            name: 'Bus 6 Route (Tekri)',
+            startingPoint: 'Tekri',
+            routeDetails: 'Tekri → Udaipole → Paras Circle → Saveena → College',
             waypoints: [
-                { name: 'Railway Station', latitude: 26.9124, longitude: 75.7873, order: 1 },
-                { name: 'MG Road', latitude: 26.9180, longitude: 75.7920, order: 2 },
-                { name: 'City Mall', latitude: 26.9220, longitude: 75.7980, order: 3 },
-                { name: 'Bus Stand', latitude: 26.9280, longitude: 75.8050, order: 4 },
-                { name: 'College Campus', latitude: 26.9350, longitude: 75.8120, order: 5 },
+                { name: 'Tekri', scheduledTime: '8:00 AM', latitude: 24.5700, longitude: 73.6800, order: 1 },
+                { name: 'Udaipole', scheduledTime: '8:02 AM', latitude: 24.5750, longitude: 73.6820, order: 2 },
+                { name: 'Amrit Namkeen', scheduledTime: '8:05 AM', latitude: 24.5760, longitude: 73.6830, order: 3 },
+                { name: 'RMV', scheduledTime: '8:10 AM', latitude: 24.5770, longitude: 73.6840, order: 4 },
+                { name: 'Kala Ji Gora Ji', scheduledTime: '8:12 AM', latitude: 24.5780, longitude: 73.6850, order: 5 },
+                { name: 'Rang Niwas', scheduledTime: '8:14 AM', latitude: 24.5790, longitude: 73.6860, order: 6 },
+                { name: 'Kishan Pol', scheduledTime: '8:16 AM', latitude: 24.5800, longitude: 73.6870, order: 7 },
+                { name: 'Patel Circle', scheduledTime: '8:18 AM', latitude: 24.5810, longitude: 73.6880, order: 8 },
+                { name: 'Paras Circle', scheduledTime: '8:20 AM', latitude: 24.5820, longitude: 73.6890, order: 9 },
+                { name: 'Indian Oil Dipo', scheduledTime: '8:22 AM', latitude: 24.5830, longitude: 73.6900, order: 10 },
+                { name: 'Allahabad Bank', scheduledTime: '8:24 AM', latitude: 24.5840, longitude: 73.6910, order: 11 },
+                { name: 'Goverdhan Villas', scheduledTime: '8:26 AM', latitude: 24.5850, longitude: 73.6920, order: 12 },
+                { name: 'Sec 14 Chungi Naka', scheduledTime: '8:28 AM', latitude: 24.5860, longitude: 73.6930, order: 13 },
+                { name: 'Rajasthan Hospital', scheduledTime: '8:29 AM', latitude: 24.5870, longitude: 73.6940, order: 14 },
+                { name: 'Jain Marble', scheduledTime: '8:30 AM', latitude: 24.5880, longitude: 73.6950, order: 15 },
+                { name: 'CA Circle', scheduledTime: '8:31 AM', latitude: 24.5890, longitude: 73.6960, order: 16 },
+                { name: 'Rangeela Hanuman', scheduledTime: '8:32 AM', latitude: 24.5900, longitude: 73.6970, order: 17 },
+                { name: 'Kheda Circle', scheduledTime: '8:33 AM', latitude: 24.5910, longitude: 73.6980, order: 18 },
+                { name: 'Saveena Choraha', scheduledTime: '8:34 AM', latitude: 24.5920, longitude: 73.6990, order: 19 },
+                { name: 'Sec 9', scheduledTime: '8:36 AM', latitude: 24.5930, longitude: 73.7000, order: 20 },
+                { name: 'Roop Furniture', scheduledTime: '8:37 AM', latitude: 24.5940, longitude: 73.7010, order: 21 },
+                { name: 'Saveena Thana', scheduledTime: '8:38 AM', latitude: 24.5950, longitude: 73.7020, order: 22 },
+                { name: 'Titradi', scheduledTime: '8:40 AM', latitude: 24.5960, longitude: 73.7030, order: 23 },
+                { name: 'Dakan Kotda', scheduledTime: '8:42 AM', latitude: 24.5970, longitude: 73.7040, order: 24 },
+                { name: 'College', scheduledTime: '8:50 AM', latitude: 24.6000, longitude: 73.7100, order: 25 }
             ],
             coordinator: coordinator1._id,
             createdBy: admin._id,
         });
 
-        const route2 = await Route.create({
-            name: 'Route B - Industrial Area',
-            startingPoint: 'Industrial Estate',
-            routeDetails: 'Industrial Estate → Tech Park → Hospital → Market → College Campus',
+        // Route for Bus 9 (Driver: Mushtaq Ji)
+        const routeBus9 = await Route.create({
+            name: 'Bus 9 Route (Rampura)',
+            startingPoint: 'Rampura',
+            routeDetails: 'Rampura → Chetak Circle → Delhi Gate → Sevashram → College',
             waypoints: [
-                { name: 'Industrial Estate', latitude: 26.8800, longitude: 75.7500, order: 1 },
-                { name: 'Tech Park', latitude: 26.8900, longitude: 75.7600, order: 2 },
-                { name: 'Hospital', latitude: 26.9000, longitude: 75.7700, order: 3 },
-                { name: 'Market', latitude: 26.9150, longitude: 75.7850, order: 4 },
-                { name: 'College Campus', latitude: 26.9350, longitude: 75.8120, order: 5 },
+                { name: 'Rampura', scheduledTime: '8:00 AM', latitude: 24.6000, longitude: 73.6500, order: 1 },
+                { name: 'Mallatalai Choraha', scheduledTime: '8:02 AM', latitude: 24.6010, longitude: 73.6520, order: 2 },
+                { name: 'Mahakaleshwer', scheduledTime: '8:03 AM', latitude: 24.6020, longitude: 73.6540, order: 3 },
+                { name: 'Rada Ji Choraha', scheduledTime: '8:05 AM', latitude: 24.6030, longitude: 73.6560, order: 4 },
+                { name: 'Swaroop Sagar', scheduledTime: '8:06 AM', latitude: 24.6040, longitude: 73.6580, order: 5 },
+                { name: 'Shiksha Bhawan', scheduledTime: '8:07 AM', latitude: 24.6050, longitude: 73.6600, order: 6 },
+                { name: 'Chetak Circle', scheduledTime: '8:10 AM', latitude: 24.6060, longitude: 73.6620, order: 7 },
+                { name: 'Hathipole', scheduledTime: '8:12 AM', latitude: 24.6070, longitude: 73.6640, order: 8 },
+                { name: 'Delhigate', scheduledTime: '8:15 AM', latitude: 24.6080, longitude: 73.6660, order: 9 },
+                { name: 'Court Choraha', scheduledTime: '8:17 AM', latitude: 24.6090, longitude: 73.6680, order: 10 },
+                { name: 'Shastri Circle', scheduledTime: '8:18 AM', latitude: 24.6100, longitude: 73.6700, order: 11 },
+                { name: 'Sabhapati Awas', scheduledTime: '8:19 AM', latitude: 24.6110, longitude: 73.6720, order: 12 },
+                { name: 'Maya Misthan', scheduledTime: '8:20 AM', latitude: 24.6120, longitude: 73.6740, order: 13 },
+                { name: 'Durga Nursery', scheduledTime: '8:21 AM', latitude: 24.6130, longitude: 73.6760, order: 14 },
+                { name: 'Kumharo Ka Bhatta', scheduledTime: '8:22 AM', latitude: 24.6140, longitude: 73.6780, order: 15 },
+                { name: 'B. N. College', scheduledTime: '8:24 AM', latitude: 24.6150, longitude: 73.6800, order: 16 },
+                { name: 'Sevashram', scheduledTime: '8:25 AM', latitude: 24.6160, longitude: 73.6820, order: 17 },
+                { name: 'BSNL', scheduledTime: '8:27 AM', latitude: 24.6170, longitude: 73.6840, order: 18 },
+                { name: 'Ranawat Poultry', scheduledTime: '8:30 AM', latitude: 24.6180, longitude: 73.6860, order: 19 },
+                { name: 'Vaishali Apartment', scheduledTime: '8:31 AM', latitude: 24.6190, longitude: 73.6880, order: 20 },
+                { name: 'National Misthan', scheduledTime: '8:32 AM', latitude: 24.6200, longitude: 73.6900, order: 21 },
+                { name: 'College', scheduledTime: '8:55 AM', latitude: 24.6000, longitude: 73.7100, order: 22 }
             ],
             coordinator: coordinator1._id,
             createdBy: admin._id,
         });
 
-        const route3 = await Route.create({
-            name: 'Route C - Residential',
-            startingPoint: 'Green Valley',
-            routeDetails: 'Green Valley → Sunrise Apartments → School Junction → Temple Road → College Campus',
+        // Route for Bus 10 (Driver: Bhanwar Singh Ji)
+        const routeBus10 = await Route.create({
+            name: 'Bus 10 Route (Lal Board)',
+            startingPoint: 'Lal Board Choraha',
+            routeDetails: 'Lal Board → Fatehpura → Sukhadiya Circle → Aayad → College',
             waypoints: [
-                { name: 'Green Valley', latitude: 26.9500, longitude: 75.7300, order: 1 },
-                { name: 'Sunrise Apartments', latitude: 26.9450, longitude: 75.7500, order: 2 },
-                { name: 'School Junction', latitude: 26.9400, longitude: 75.7700, order: 3 },
-                { name: 'Temple Road', latitude: 26.9380, longitude: 75.7900, order: 4 },
-                { name: 'College Campus', latitude: 26.9350, longitude: 75.8120, order: 5 },
+                { name: 'Lal Board Choraha', scheduledTime: '7:45 AM', latitude: 24.6300, longitude: 73.6800, order: 1 },
+                { name: 'Prajapat Palace', scheduledTime: '7:47 AM', latitude: 24.6310, longitude: 73.6810, order: 2 },
+                { name: 'Badgaon', scheduledTime: '7:50 AM', latitude: 24.6320, longitude: 73.6820, order: 3 },
+                { name: 'Saifan Choraha', scheduledTime: '7:55 AM', latitude: 24.6330, longitude: 73.6830, order: 4 },
+                { name: 'Fatehpura', scheduledTime: '8:00 AM', latitude: 24.6340, longitude: 73.6840, order: 5 },
+                { name: 'Dewali', scheduledTime: '8:02 AM', latitude: 24.6350, longitude: 73.6850, order: 6 },
+                { name: 'Saheli Nagar', scheduledTime: '8:05 AM', latitude: 24.6360, longitude: 73.6860, order: 7 },
+                { name: 'Sukhadiya Circle', scheduledTime: '8:07 AM', latitude: 24.6370, longitude: 73.6870, order: 8 },
+                { name: 'Banshi Pan', scheduledTime: '8:10 AM', latitude: 24.6380, longitude: 73.6880, order: 9 },
+                { name: 'New Bhopalpura', scheduledTime: '8:13 AM', latitude: 24.6390, longitude: 73.6890, order: 10 },
+                { name: 'Jodhpur Dairy', scheduledTime: '8:17 AM', latitude: 24.6400, longitude: 73.6900, order: 11 },
+                { name: 'CPS School', scheduledTime: '8:20 AM', latitude: 24.6410, longitude: 73.6910, order: 12 },
+                { name: 'Kharaa Kuwa', scheduledTime: '8:22 AM', latitude: 24.6420, longitude: 73.6920, order: 13 },
+                { name: '100 Ft Road', scheduledTime: '8:25 AM', latitude: 24.6430, longitude: 73.6930, order: 14 },
+                { name: 'Anand Plaza', scheduledTime: '8:27 AM', latitude: 24.6440, longitude: 73.6940, order: 15 },
+                { name: 'Aayad', scheduledTime: '8:28 AM', latitude: 24.6450, longitude: 73.6950, order: 16 },
+                { name: 'Hansa Palace', scheduledTime: '8:32 AM', latitude: 24.6460, longitude: 73.6960, order: 17 },
+                { name: 'Jhadav Nursery', scheduledTime: '8:35 AM', latitude: 24.6470, longitude: 73.6970, order: 18 },
+                { name: 'Manva Kheda', scheduledTime: '8:37 AM', latitude: 24.6480, longitude: 73.6980, order: 19 },
+                { name: 'College', scheduledTime: '8:55 AM', latitude: 24.6000, longitude: 73.7100, order: 20 }
             ],
-            coordinator: coordinator2._id,
+            coordinator: coordinator1._id,
             createdBy: admin._id,
         });
 
-        const route4 = await Route.create({
-            name: 'Route D - Highway',
-            startingPoint: 'Highway Toll Plaza',
-            routeDetails: 'Highway Toll Plaza → Petrol Pump → Village Turn → Main Gate → College Campus',
+        // Route for Bus 4 (Driver: Narayan Singh)
+        const routeBus4 = await Route.create({
+            name: 'Bus 4 Route (Chitrakoot)',
+            startingPoint: 'Chitrakoot Nagar',
+            routeDetails: 'Chitrakoot → Bhuwana → Pratap Nagar → Sector 3 → College',
             waypoints: [
-                { name: 'Highway Toll Plaza', latitude: 26.8500, longitude: 75.8500, order: 1 },
-                { name: 'Petrol Pump', latitude: 26.8700, longitude: 75.8400, order: 2 },
-                { name: 'Village Turn', latitude: 26.9000, longitude: 75.8300, order: 3 },
-                { name: 'Main Gate', latitude: 26.9200, longitude: 75.8200, order: 4 },
-                { name: 'College Campus', latitude: 26.9350, longitude: 75.8120, order: 5 },
+                { name: 'Chitrakoot Nagar', scheduledTime: '8:00 AM', latitude: 24.6100, longitude: 73.7200, order: 1 },
+                { name: 'Bhuwana By Pass', scheduledTime: '8:03 AM', latitude: 24.6110, longitude: 73.7210, order: 2 },
+                { name: 'Bhuwana', scheduledTime: '8:05 AM', latitude: 24.6120, longitude: 73.7220, order: 3 },
+                { name: 'RK Circle', scheduledTime: '8:07 AM', latitude: 24.6130, longitude: 73.7230, order: 4 },
+                { name: 'Mewar Circle', scheduledTime: '8:10 AM', latitude: 24.6140, longitude: 73.7240, order: 5 },
+                { name: 'New RTO', scheduledTime: '8:13 AM', latitude: 24.6150, longitude: 73.7250, order: 6 },
+                { name: 'Kalka Mata Road', scheduledTime: '8:15 AM', latitude: 24.6160, longitude: 73.7260, order: 7 },
+                { name: 'Bekani Puliya', scheduledTime: '8:20 AM', latitude: 24.6170, longitude: 73.7270, order: 8 },
+                { name: 'University Gate', scheduledTime: '8:22 AM', latitude: 24.6180, longitude: 73.7280, order: 9 },
+                { name: 'Bohra Ganesh Ji', scheduledTime: '8:25 AM', latitude: 24.6190, longitude: 73.7290, order: 10 },
+                { name: 'Pratap Nagar Choraha', scheduledTime: '8:30 AM', latitude: 24.6200, longitude: 73.7300, order: 11 },
+                { name: 'Transport Nagar', scheduledTime: '8:34 AM', latitude: 24.6210, longitude: 73.7310, order: 12 },
+                { name: 'Sunderwas', scheduledTime: '8:40 AM', latitude: 24.6220, longitude: 73.7320, order: 13 },
+                { name: 'Thokar Choraha', scheduledTime: '8:42 AM', latitude: 24.6230, longitude: 73.7330, order: 14 },
+                { name: 'Sewashram Puliya', scheduledTime: '8:43 AM', latitude: 24.6240, longitude: 73.7340, order: 15 },
+                { name: 'Sector 3 (Nehru Hostel)', scheduledTime: '8:44 AM', latitude: 24.6250, longitude: 73.7350, order: 16 },
+                { name: 'Menaria Guest House', scheduledTime: '8:46 AM', latitude: 24.6260, longitude: 73.7360, order: 17 },
+                { name: 'Sec 6 Police Station', scheduledTime: '8:47 AM', latitude: 24.6270, longitude: 73.7370, order: 18 },
+                { name: 'Sai Baba', scheduledTime: '8:48 AM', latitude: 24.6280, longitude: 73.7380, order: 19 },
+                { name: 'Eklingpura', scheduledTime: '8:50 AM', latitude: 24.6290, longitude: 73.7390, order: 20 },
+                { name: 'College', scheduledTime: '9:00 AM', latitude: 24.6000, longitude: 73.7100, order: 21 }
             ],
-            coordinator: coordinator2._id,
+            coordinator: coordinator1._id,
             createdBy: admin._id,
         });
-        console.log('✓ Created 4 Routes');
+        console.log('✓ Created 4 Routes with Real Schedule Data (88 total stops)');
 
         // ============ BUSES ============
 
         const buses = await Bus.insertMany([
             {
-                busNumber: 'RJ-14-PA-1234',
-                driver: driver1._id,
-                route: route1._id,
-                departureTime: '07:30',
+                busNumber: 'Bus 6',
+                driver: driverBus6._id,
+                route: routeBus6._id,
+                departureTime: '08:00',
                 capacity: 45,
                 isAvailableToday: true,
                 coordinator: coordinator1._id,
                 status: 'active',
-                currentLocation: {
-                    latitude: 26.9124,
-                    longitude: 75.7873,
-                    timestamp: new Date(),
-                },
+                currentLocation: { latitude: 24.5700, longitude: 73.6800, timestamp: new Date() },
             },
             {
-                busNumber: 'RJ-14-PA-5678',
-                driver: driver2._id,
-                route: route2._id,
-                departureTime: '07:45',
+                busNumber: 'Bus 9',
+                driver: driverBus9._id,
+                route: routeBus9._id,
+                departureTime: '08:00',
                 capacity: 50,
                 isAvailableToday: true,
                 coordinator: coordinator1._id,
                 status: 'active',
-                currentLocation: {
-                    latitude: 26.8800,
-                    longitude: 75.7500,
-                    timestamp: new Date(),
-                },
+                currentLocation: { latitude: 24.6000, longitude: 73.6500, timestamp: new Date() },
             },
             {
-                busNumber: 'RJ-14-PA-9012',
-                driver: driver3._id,
-                route: route3._id,
-                departureTime: '08:00',
+                busNumber: 'Bus 10',
+                driver: driverBus10._id,
+                route: routeBus10._id,
+                departureTime: '07:45',
                 capacity: 40,
                 isAvailableToday: true,
-                coordinator: coordinator2._id,
+                coordinator: coordinator1._id,
                 status: 'active',
-                currentLocation: {
-                    latitude: 26.9500,
-                    longitude: 75.7300,
-                    timestamp: new Date(),
-                },
+                currentLocation: { latitude: 24.6300, longitude: 73.6800, timestamp: new Date() },
             },
             {
-                busNumber: 'RJ-14-PA-3456',
-                driver: driver4._id,
-                route: route4._id,
-                departureTime: '08:15',
+                busNumber: 'Bus 4',
+                driver: driverBus4._id,
+                route: routeBus4._id,
+                departureTime: '08:00',
                 capacity: 55,
-                isAvailableToday: false, // Not running today
-                coordinator: coordinator2._id,
-                status: 'maintenance',
+                isAvailableToday: true,
+                coordinator: coordinator1._id,
+                status: 'active',
+                currentLocation: { latitude: 24.6100, longitude: 73.7200, timestamp: new Date() },
             },
         ]);
-        console.log('✓ Created 4 Buses');
+        console.log('✓ Created 4 Buses linked to Drivers and Routes');
 
         // ============ BROADCASTS ============
 
         await Broadcast.insertMany([
             {
-                title: 'Welcome to Track My Bus!',
-                message: 'Dear students, welcome to our new bus tracking system. You can now track your bus in real-time.',
+                title: 'Welcome',
+                message: 'Welcome to the updated bus tracking system with real schedule data.',
                 targetRole: 'all',
                 channels: { email: false, push: false, inApp: true },
                 sentBy: admin._id,
             },
             {
-                title: 'Bus Schedule Update',
-                message: 'Due to road construction on Route B, buses may be delayed by 10-15 minutes. We apologize for the inconvenience.',
+                title: 'Route Update',
+                message: 'Routes for Bus 4, 6, 9, and 10 have been updated with accurate schedule times from the official PDF.',
                 targetRole: 'student',
                 channels: { email: true, push: false, inApp: true },
                 sentBy: admin._id,
             },
-            {
-                title: 'Driver Meeting Notice',
-                message: 'All drivers are requested to attend a safety meeting on Monday at 9 AM in the main office.',
-                targetRole: 'driver',
-                channels: { email: true, push: false, inApp: true },
-                sentBy: coordinator1._id,
-            },
         ]);
-        console.log('✓ Created 3 Broadcasts');
+        console.log('✓ Created Broadcasts');
 
         // ============ SUMMARY ============
-
         console.log('\n========== SEED DATA SUMMARY ==========');
         console.log('Users:');
-        console.log('  - Admin: 1 (Phone: 9999999999)');
-        console.log('  - Coordinators: 2');
-        console.log('  - Drivers: 4');
-        console.log('  - Students: 5');
-        console.log('Routes: 4');
+        console.log('  - Admin: 1 (Phone: 8529657145)');
+        console.log('  - Coordinator: 1 (Phone: 7665166735)');
+        console.log('  - Drivers: 4 (Real data from PDF)');
+        console.log('  - Students: 3');
+        console.log('Routes: 4 (Bus 4, 6, 9, 10) with 88 total stops');
         console.log('Buses: 4');
-        console.log('Broadcasts: 3');
-        console.log('\n========== LOGIN CREDENTIALS ==========');
-        console.log('Admin:       Phone: 9999999999');
-        console.log('Coordinator: Phone: 9876543210');
-        console.log('Driver:      Phone: 9123456780');
-        console.log('Student:     Phone: 8529657145');
-        console.log('\n(Use OTP login - check console for OTP)');
+        console.log('\n========== DRIVER CREDENTIALS ==========');
+        console.log('Bus 6 (Bheru Lal Ji):     Phone: 8696932793');
+        console.log('Bus 9 (Mushtaq Ji):       Phone: 8696932791');
+        console.log('Bus 10 (Bhanwar Singh Ji): Phone: 8285314292');
+        console.log('Bus 4 (Narayan Singh):    Phone: 8107799177');
         console.log('=========================================\n');
 
         await mongoose.disconnect();
-        console.log('✓ Disconnected from MongoDB');
+        console.log('✓ Seeding complete!');
         process.exit(0);
     } catch (error) {
-        console.error('✗ Seed failed:', error);
+        console.error('✗ Seeding failed:', error);
         process.exit(1);
     }
 };

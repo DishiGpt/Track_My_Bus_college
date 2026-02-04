@@ -72,6 +72,7 @@ const BusTrackingView = ({
                 name: wp.name || `Stop ${index + 1}`,
                 lat: wp.latitude,
                 lng: wp.longitude,
+                scheduledTime: wp.scheduledTime || '', // e.g., "8:00 AM"
                 isWaypoint: true,
                 order: index
             }));
@@ -80,6 +81,7 @@ const BusTrackingView = ({
             const stopNames = routeDetails.split(/→|->|➔|➜/).map(s => s.trim()).filter(Boolean);
             baseStops = stopNames.map((name, index) => ({
                 name,
+                scheduledTime: '',
                 isWaypoint: false,
                 order: index
             }));
@@ -136,21 +138,29 @@ const BusTrackingView = ({
 
             // Determine what time to show
             let displayTime = '';
+            let actualArrivalTime = '';
+
             if (arrivalLog) {
+                // Bus has arrived at this stop - show actual arrival time
                 const arrivalDate = new Date(arrivalLog.arrivalTime);
-                displayTime = arrivalDate.toLocaleTimeString('en-US', {
-                    hour: '2-digit', minute: '2-digit', hour12: false
+                actualArrivalTime = arrivalDate.toLocaleTimeString('en-US', {
+                    hour: '2-digit', minute: '2-digit', hour12: true
                 });
-            } else if (status === 'upcoming') {
-                const now = new Date();
-                const etaTime = new Date(now.getTime() + etaMinutes * 60 * 1000);
-                displayTime = etaTime.toLocaleTimeString('en-US', {
-                    hour: '2-digit', minute: '2-digit', hour12: false
-                });
+                displayTime = actualArrivalTime;
+            } else if (!busLocation) {
+                // Bus is OFFLINE - show scheduled time from PDF
+                displayTime = stop.scheduledTime || 'TBD';
             } else if (status === 'current') {
                 displayTime = 'Now';
             } else if (status === 'passed') {
                 displayTime = 'Reached';
+            } else {
+                // Bus is live but hasn't reached this stop - show ETA
+                if (etaMinutes > 0) {
+                    displayTime = `~${etaMinutes} min`;
+                } else {
+                    displayTime = stop.scheduledTime || 'Soon';
+                }
             }
 
             return {
@@ -158,7 +168,9 @@ const BusTrackingView = ({
                 name: stop.name,
                 lat: stop.lat,
                 lng: stop.lng,
+                scheduledTime: stop.scheduledTime,
                 time: displayTime,
+                actualArrivalTime,
                 status,
                 isStart: index === 0,
                 isEnd: index === baseStops.length - 1,

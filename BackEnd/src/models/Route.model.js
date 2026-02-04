@@ -19,6 +19,7 @@ const routeSchema = new mongoose.Schema(
         latitude: Number,
         longitude: Number,
         order: Number,
+        scheduledTime: String, // e.g., "8:00 AM"
       },
     ],
     coordinator: {
