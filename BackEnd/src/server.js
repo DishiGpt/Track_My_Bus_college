@@ -12,7 +12,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: [process.env.FRONTEND_URL,"https://track-my-bus-college.vercel.app/api"],
   credentials: true,
 }));
 app.use(express.json());
