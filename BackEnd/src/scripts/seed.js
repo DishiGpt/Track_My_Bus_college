@@ -42,7 +42,8 @@ const seedData = async () => {
         console.log('✓ Created Admin and Coordinator');
 
         // 2. Real Drivers (From PDF)
-        const driverBus6 = await User.create({
+
+        const driverBus12 = await User.create({
             name: 'Bheru Lal Ji',
             phone: '8696932793',
             role: 'driver',
@@ -50,7 +51,7 @@ const seedData = async () => {
             profileComplete: true,
         });
 
-        const driverBus9 = await User.create({
+        const driverBus13 = await User.create({
             name: 'Mushtaq Ji',
             phone: '8696932791',
             role: 'driver',
@@ -58,7 +59,7 @@ const seedData = async () => {
             profileComplete: true,
         });
 
-        const driverBus10 = await User.create({
+        const driverBus11 = await User.create({
             name: 'Bhanwar Singh Ji',
             phone: '8285314292',
             role: 'driver',
@@ -66,7 +67,7 @@ const seedData = async () => {
             profileComplete: true,
         });
 
-        const driverBus4 = await User.create({
+        const driverBus10 = await User.create({
             name: 'Narayan Singh',
             phone: '8107799177',
             role: 'driver',
@@ -84,9 +85,9 @@ const seedData = async () => {
 
         // ============ ROUTES WITH REAL SCHEDULE DATA ============
 
-        // Route for Bus 6 (Driver: Bheru Lal Ji)
-        const routeBus6 = await Route.create({
-            name: 'Bus 6 Route (Tekri)',
+        // Route for Bus 12 (Driver: Bheru Lal Ji)
+        const routeBus12 = await Route.create({
+            name: 'Bus 12 Route (Tekri)',
             startingPoint: 'Tekri',
             routeDetails: 'Tekri → Udaipole → Paras Circle → Saveena → College',
             waypoints: [
@@ -120,9 +121,9 @@ const seedData = async () => {
             createdBy: admin._id,
         });
 
-        // Route for Bus 9 (Driver: Mushtaq Ji)
-        const routeBus9 = await Route.create({
-            name: 'Bus 9 Route (Rampura)',
+        // Route for Bus 13 (Driver: Mushtaq Ji)
+        const routeBus13 = await Route.create({
+            name: 'Bus 13 Route (Rampura)',
             startingPoint: 'Rampura',
             routeDetails: 'Rampura → Chetak Circle → Delhi Gate → Sevashram → College',
             waypoints: [
@@ -153,9 +154,9 @@ const seedData = async () => {
             createdBy: admin._id,
         });
 
-        // Route for Bus 10 (Driver: Bhanwar Singh Ji)
-        const routeBus10 = await Route.create({
-            name: 'Bus 10 Route (Lal Board)',
+        // Route for Bus 11 (Driver: Bhanwar Singh Ji)
+        const routeBus11 = await Route.create({
+            name: 'Bus 11 Route (Lal Board)',
             startingPoint: 'Lal Board Choraha',
             routeDetails: 'Lal Board → Fatehpura → Sukhadiya Circle → Aayad → College',
             waypoints: [
@@ -184,9 +185,9 @@ const seedData = async () => {
             createdBy: admin._id,
         });
 
-        // Route for Bus 4 (Driver: Narayan Singh)
-        const routeBus4 = await Route.create({
-            name: 'Bus 4 Route (Chitrakoot)',
+        // Route for Bus 10 (Driver: Narayan Singh)
+        const routeBus10 = await Route.create({
+            name: 'Bus 10 Route (Chitrakoot)',
             startingPoint: 'Chitrakoot Nagar',
             routeDetails: 'Chitrakoot → Bhuwana → Pratap Nagar → Sector 3 → College',
             waypoints: [
@@ -221,9 +222,9 @@ const seedData = async () => {
 
         const buses = await Bus.insertMany([
             {
-                busNumber: 'Bus 6',
-                driver: driverBus6._id,
-                route: routeBus6._id,
+                busNumber: 'Bus 12',
+                driver: driverBus12._id,
+                route: routeBus12._id,
                 departureTime: '08:00',
                 capacity: 45,
                 isAvailableToday: true,
@@ -232,9 +233,9 @@ const seedData = async () => {
                 currentLocation: { latitude: 24.5700, longitude: 73.6800, timestamp: new Date() },
             },
             {
-                busNumber: 'Bus 9',
-                driver: driverBus9._id,
-                route: routeBus9._id,
+                busNumber: 'Bus 13',
+                driver: driverBus13._id,
+                route: routeBus13._id,
                 departureTime: '08:00',
                 capacity: 50,
                 isAvailableToday: true,
@@ -243,9 +244,9 @@ const seedData = async () => {
                 currentLocation: { latitude: 24.6000, longitude: 73.6500, timestamp: new Date() },
             },
             {
-                busNumber: 'Bus 10',
-                driver: driverBus10._id,
-                route: routeBus10._id,
+                busNumber: 'Bus 11',
+                driver: driverBus11._id,
+                route: routeBus11._id,
                 departureTime: '07:45',
                 capacity: 40,
                 isAvailableToday: true,
@@ -254,9 +255,9 @@ const seedData = async () => {
                 currentLocation: { latitude: 24.6300, longitude: 73.6800, timestamp: new Date() },
             },
             {
-                busNumber: 'Bus 4',
-                driver: driverBus4._id,
-                route: routeBus4._id,
+                busNumber: 'Bus 10',
+                driver: driverBus10._id,
+                route: routeBus10._id,
                 departureTime: '08:00',
                 capacity: 55,
                 isAvailableToday: true,
@@ -279,7 +280,7 @@ const seedData = async () => {
             },
             {
                 title: 'Route Update',
-                message: 'Routes for Bus 4, 6, 9, and 10 have been updated with accurate schedule times from the official PDF.',
+                message: 'Routes for Bus 10, 12, 13, and 11 have been updated with accurate schedule times from the official PDF.',
                 targetRole: 'student',
                 channels: { email: true, push: false, inApp: true },
                 sentBy: admin._id,
@@ -294,13 +295,13 @@ const seedData = async () => {
         console.log('  - Coordinator: 1 (Phone: 7665166735)');
         console.log('  - Drivers: 4 (Real data from PDF)');
         console.log('  - Students: 3');
-        console.log('Routes: 4 (Bus 4, 6, 9, 10) with 88 total stops');
+        console.log('Routes: 4 (Bus 10, 12, 13, 11) with 88 total stops');
         console.log('Buses: 4');
         console.log('\n========== DRIVER CREDENTIALS ==========');
-        console.log('Bus 6 (Bheru Lal Ji):     Phone: 8696932793');
-        console.log('Bus 9 (Mushtaq Ji):       Phone: 8696932791');
-        console.log('Bus 10 (Bhanwar Singh Ji): Phone: 8285314292');
-        console.log('Bus 4 (Narayan Singh):    Phone: 8107799177');
+        console.log('Bus 12 (Bheru Lal Ji):     Phone: 8696932793');
+        console.log('Bus 13 (Mushtaq Ji):       Phone: 8696932791');
+        console.log('Bus 11 (Bhanwar Singh Ji): Phone: 8285314292');
+        console.log('Bus 10 (Narayan Singh):    Phone: 8107799177');
         console.log('=========================================\n');
 
         await mongoose.disconnect();

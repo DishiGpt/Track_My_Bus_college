@@ -111,13 +111,22 @@ const BusTrackingView = ({
             let etaMinutes = 0;
             let cumulativeDistance = 0;
 
+            // Check if this stop is in the stopArrivals (actual reached stops)
             const arrivalLog = stopArrivals.find(log =>
                 log.stopId === (stop.id || stop._id) || log.stopName === stop.name
             );
 
+            // Determine status based on actual GPS location
             if (busLocation && nearestStopIndex !== -1) {
                 if (index < nearestStopIndex) {
-                    status = 'passed';
+                    // Only mark a stop as "passed" if we have any arrival confirmations
+                    // This avoids showing a lot of "passed" stops when the driver
+                    // hasn't actually logged arrivals yet (e.g., Bus 10 case).
+                    if (stopArrivals && stopArrivals.length > 0) {
+                        status = 'passed';
+                    } else {
+                        status = 'upcoming';
+                    }
                 } else if (index === nearestStopIndex) {
                     if (minDistance < 0.2) {
                         status = 'current';
@@ -136,31 +145,21 @@ const BusTrackingView = ({
                 }
             }
 
-            // Determine what time to show
+
+            // Always show scheduled time (or actual if reached) on the right, like RedBus
             let displayTime = '';
             let actualArrivalTime = '';
-
-            if (arrivalLog) {
-                // Bus has arrived at this stop - show actual arrival time
+            if (arrivalLog && arrivalLog.arrivalTime) {
+                // Bus has actually arrived at this stop - show actual arrival time
                 const arrivalDate = new Date(arrivalLog.arrivalTime);
                 actualArrivalTime = arrivalDate.toLocaleTimeString('en-US', {
                     hour: '2-digit', minute: '2-digit', hour12: true
                 });
                 displayTime = actualArrivalTime;
-            } else if (!busLocation) {
-                // Bus is OFFLINE - show scheduled time from PDF
-                displayTime = stop.scheduledTime || 'TBD';
-            } else if (status === 'current') {
-                displayTime = 'Now';
-            } else if (status === 'passed') {
-                displayTime = 'Reached';
+                status = 'reached';
             } else {
-                // Bus is live but hasn't reached this stop - show ETA
-                if (etaMinutes > 0) {
-                    displayTime = `~${etaMinutes} min`;
-                } else {
-                    displayTime = stop.scheduledTime || 'Soon';
-                }
+                // Always show scheduled time for all stops
+                displayTime = stop.scheduledTime || 'TBD';
             }
 
             return {
@@ -180,7 +179,7 @@ const BusTrackingView = ({
         });
     }, [bus, busLocation, stopArrivals]);
 
-    const lastStopReached = stops.filter(s => s.status === 'passed').slice(-1)[0];
+    const lastStopReached = stops.filter(s => s.status === 'reached').slice(-1)[0];
     const nextStop = stops.find(s => s.status === 'upcoming' || s.status === 'current');
 
     const handleCallDriver = () => {
@@ -236,7 +235,7 @@ const BusTrackingView = ({
             <div className="bus-tracking-view">
                 <div className="tracking-header">
                     <div className="tracking-header-left">
-                        <button className="back-button" onClick={onBack}>←</button>
+                        <button className="back-button" onClick={onBack} title="Go back and track another bus">←</button>
                         <div className="tracking-header-info">
                             <h2>{bus?.busNumber || 'Loading...'}</h2>
                             <p>{bus?.route?.name || ''}</p>
@@ -258,7 +257,7 @@ const BusTrackingView = ({
         <div className="bus-tracking-view">
             <div className="tracking-header">
                 <div className="tracking-header-left">
-                    <button className="back-button" onClick={onBack}>←</button>
+                    <button className="back-button" onClick={onBack} title="Go back and track another bus">←</button>
                     <div className="tracking-header-info">
                         <h2>{bus?.busNumber}</h2>
                         <p>{bus?.route?.name}</p>
@@ -402,7 +401,7 @@ const BusTrackingView = ({
 
             <div className="bus-info-card">
                 <div className="bus-info-left">
-                    <span className="bus-plate">{bus?.busNumber}</span>
+                    <span className="bus-plate">{mapBusNumber(bus?.busNumber)}</span>
                     <div>
                         <div className="bus-name">{bus?.driver?.name || 'Driver'}</div>
                         <div className="bus-type">Contact available</div>
@@ -419,7 +418,7 @@ const BusTrackingView = ({
 
             <div className="timeline-section">
                 <div className="timeline-header">
-                    Route Progress • {stops.filter(s => s.status === 'passed').length}/{stops.length} completed
+                    Route Progress • {stops.filter(s => s.status === 'reached').length}/{stops.length} completed
                 </div>
                 <div className="stops-timeline">
                     {stops.map((stop, index) => (
@@ -432,6 +431,7 @@ const BusTrackingView = ({
                                         {stop.isStart && <span className="stop-badge starting">Start</span>}
                                         {stop.status === 'current' && <span className="stop-badge boarding">Current Location</span>}
                                         {stop.isEnd && <span className="stop-badge destination">End</span>}
+                                        {stop.status === 'reached' && <span className="stop-badge reached">Reached</span>}
                                         {stop.etaMinutes > 0 && stop.status === 'upcoming' && (
                                             <span className="stop-eta-mins">~{stop.etaMinutes} min</span>
                                         )}
@@ -446,5 +446,18 @@ const BusTrackingView = ({
         </div>
     );
 };
+
+
+// Helper to map old bus numbers to new ones
+function mapBusNumber(busNumber) {
+    if (!busNumber) return busNumber;
+    // Accept both string and number
+    const str = String(busNumber);
+    if (str === '10') return '11';
+    if (str === '9') return '13';
+    if (str === '4') return '10';
+    if (str === '6') return '12';
+    return str;
+}
 
 export default BusTrackingView;

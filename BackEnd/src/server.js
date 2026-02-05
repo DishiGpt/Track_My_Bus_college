@@ -74,3 +74,47 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log(`✓ Server running on http://localhost:${PORT}`);
   console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
 });
+
+// ===== Daily tracking reset at 10:00 AM server time =====
+const scheduleDailyReset = () => {
+  const now = new Date();
+  const next = new Date(now);
+  next.setHours(10, 0, 0, 0); // 10:00:00.000
+  if (next <= now) {
+    // if 10am already passed today, schedule for tomorrow
+    next.setDate(next.getDate() + 1);
+  }
+
+  const msUntilNext = next.getTime() - now.getTime();
+  console.log(`Scheduling daily tracking reset in ${Math.round(msUntilNext / 1000 / 60)} minutes`);
+
+  setTimeout(async () => {
+    try {
+      const Bus = require('./models/Bus.model');
+      console.log('Running daily tracking reset: clearing currentLocation and stopArrivals for all buses');
+      await Bus.updateMany({}, { $set: { currentLocation: null, stopArrivals: [] } });
+      // notify connected clients
+      try {
+        io.emit('tracking-reset', { message: 'Daily tracking reset performed' });
+      } catch (e) {
+        console.warn('Failed to emit tracking-reset event', e.message || e);
+      }
+      console.log('Daily tracking reset completed');
+    } catch (err) {
+      console.error('Error during daily tracking reset:', err);
+    }
+    // schedule following resets every 24 hours
+    setInterval(async () => {
+      try {
+        const Bus = require('./models/Bus.model');
+        console.log('Running scheduled daily tracking reset');
+        await Bus.updateMany({}, { $set: { currentLocation: null, stopArrivals: [] } });
+        io.emit('tracking-reset', { message: 'Daily tracking reset performed' });
+      } catch (err) {
+        console.error('Error during scheduled daily tracking reset:', err);
+      }
+    }, 24 * 60 * 60 * 1000);
+  }, msUntilNext);
+};
+
+scheduleDailyReset();

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import BusTrackingView from './BusTrackingView';
 import { io } from 'socket.io-client';
 
-const BusTracker = ({ buses }) => {
-    const [selectedBus, setSelectedBus] = useState(null);
+const BusTracker = ({ buses, isTracking = false, initialBus = null, onBackToList = null }) => {
+    const [selectedBus, setSelectedBus] = useState(initialBus);
     const [busLocation, setBusLocation] = useState(null);
     const [studentLocation, setStudentLocation] = useState(null);
     const [lastUpdated, setLastUpdated] = useState(null);
@@ -40,6 +40,14 @@ const BusTracker = ({ buses }) => {
                 console.log('🔄 Re-joining bus room:', selectedBusRef.current._id);
                 socket.emit('join-bus', selectedBusRef.current._id.toString());
             }
+        });
+
+        socket.on('tracking-reset', (payload) => {
+            console.log('🔄 Received tracking-reset event', payload);
+            // Clear local tracking state so UI reflects reset
+            setBusLocation(null);
+            setStopArrivals([]);
+            setLastUpdated(new Date());
         });
 
         socket.on('location-update', (data) => {
@@ -198,17 +206,32 @@ const BusTracker = ({ buses }) => {
 
             {selectedBus && (
                 <BusTrackingView
-                    bus={selectedBus}
+                    bus={{ ...selectedBus, busNumber: mapBusNumber(selectedBus.busNumber) }}
                     busLocation={busLocation}
                     studentLocation={studentLocation}
                     stopArrivals={stopArrivals}
                     lastUpdated={lastUpdated}
                     isLoading={isLoading}
-                    onBack={() => setSelectedBus(null)}
+                    onBack={() => {
+                        setSelectedBus(null);
+                        if (onBackToList) onBackToList();
+                    }}
                 />
             )}
         </div>
     );
 };
+
+
+// Helper to map old bus numbers to new ones
+function mapBusNumber(busNumber) {
+    if (!busNumber) return busNumber;
+    const str = String(busNumber);
+    if (str === '10') return '11';
+    if (str === '9') return '13';
+    if (str === '4') return '10';
+    if (str === '6') return '12';
+    return str;
+}
 
 export default BusTracker;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { busAPI } from '../utils/api';
 import BusTracker from '../components/student/BusTracker';
+import TripDetailsCard from '../components/student/TripDetailsCard';
 
 const StudentPage = () => {
     const { user, logout } = useAuth();
@@ -9,7 +10,8 @@ const StudentPage = () => {
     const [selectedBus, setSelectedBus] = useState(null);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('buses');
-    const [showBusModal, setShowBusModal] = useState(false);
+    const [showTripDetails, setShowTripDetails] = useState(false);
+    const [isTracking, setIsTracking] = useState(false);
 
     const tabs = [
         { id: 'buses', label: 'Buses', icon: '🚌' },
@@ -36,7 +38,13 @@ const StudentPage = () => {
 
     const handleBusSelect = (bus) => {
         setSelectedBus(bus);
-        setShowBusModal(true);
+        setShowTripDetails(true);
+    };
+
+    const handleStartTracking = (bus) => {
+        setSelectedBus(bus);
+        setShowTripDetails(false);
+        setIsTracking(true);
     };
 
     return (
@@ -119,10 +127,14 @@ const StudentPage = () => {
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2">
+                                        <div className="mt-3 pt-3 border-t border-gray-100 grid grid-cols-3 gap-2">
                                             <div>
                                                 <p className="text-xs text-gray-400">Departure</p>
                                                 <p className="text-sm font-medium text-gray-700">⏰ {bus.departureTime}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-400">Arrival</p>
+                                                <p className="text-sm font-medium text-gray-700">⏰ {bus.route?.waypoints && bus.route.waypoints.length > 0 ? bus.route.waypoints[bus.route.waypoints.length - 1].scheduledTime : (bus.arrivalTime || '—')}</p>
                                             </div>
                                             <div>
                                                 <p className="text-xs text-gray-400">Driver</p>
@@ -139,7 +151,7 @@ const StudentPage = () => {
                 {/* Track Tab Content */}
                 {activeTab === 'track' && (
                     <div className="h-full">
-                        <BusTracker buses={buses} />
+                        <BusTracker buses={buses} isTracking={isTracking} initialBus={selectedBus} onBackToList={() => setIsTracking(false)} />
                     </div>
                 )}
             </main>
@@ -170,90 +182,12 @@ const StudentPage = () => {
                 </div>
             </nav>
 
-            {/* Bus Details Modal - Bottom Sheet Style */}
-            {showBusModal && selectedBus && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center"
-                    onClick={() => setShowBusModal(false)}
-                >
-                    <div
-                        className="bg-white rounded-t-3xl w-full max-w-lg p-6 pb-8 animate-slide-up"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Handle Bar */}
-                        <div className="flex justify-center mb-4">
-                            <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
-                        </div>
-
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center">
-                                <span className="text-3xl">🚌</span>
-                            </div>
-                            <div>
-                                <h3 className="text-2xl font-bold text-gray-900">{selectedBus.busNumber}</h3>
-                                <p className="text-gray-500">{selectedBus.route?.name || 'Route N/A'}</p>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 mb-6">
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                                <span className="text-xl">👤</span>
-                                <div>
-                                    <p className="text-xs text-gray-400">Driver</p>
-                                    <p className="font-medium">{selectedBus.driver?.name || 'Not Assigned'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                                <span className="text-xl">📞</span>
-                                <div>
-                                    <p className="text-xs text-gray-400">Contact</p>
-                                    <p className="font-medium">{selectedBus.driver?.phone || 'N/A'}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                                <span className="text-xl">⏰</span>
-                                <div>
-                                    <p className="text-xs text-gray-400">Departure Time</p>
-                                    <p className="font-medium">{selectedBus.departureTime}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                                <span className="text-xl">🪑</span>
-                                <div>
-                                    <p className="text-xs text-gray-400">Capacity</p>
-                                    <p className="font-medium">{selectedBus.capacity} seats</p>
-                                </div>
-                            </div>
-                            <div className={`flex items-center gap-3 p-3 rounded-xl ${selectedBus.currentLocation ? 'bg-green-50' : 'bg-gray-50'}`}>
-                                <span className="text-xl">{selectedBus.currentLocation ? '🟢' : '⚪'}</span>
-                                <div>
-                                    <p className="text-xs text-gray-400">Tracking Status</p>
-                                    <p className={`font-medium ${selectedBus.currentLocation ? 'text-green-700' : 'text-gray-500'}`}>
-                                        {selectedBus.currentLocation ? 'Live tracking available' : 'Currently offline'}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowBusModal(false);
-                                    setActiveTab('track');
-                                }}
-                                className="flex-1 bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg active:bg-blue-700 transition-all touch-manipulation"
-                            >
-                                Track Bus
-                            </button>
-                            <button
-                                onClick={() => setShowBusModal(false)}
-                                className="px-6 py-4 bg-gray-100 text-gray-700 rounded-2xl font-medium active:bg-gray-200 transition-all touch-manipulation"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            {/* Bus Details Card - Trip Details Modal */}
+            {showTripDetails && selectedBus && (
+                <TripDetailsCard
+                    bus={{ ...selectedBus, busNumber: mapBusNumber(selectedBus.busNumber) }}
+                    onClose={() => handleStartTracking(selectedBus)}
+                />
             )}
 
             <style jsx>{`
@@ -272,5 +206,17 @@ const StudentPage = () => {
         </div>
     );
 };
+
+
+// Helper to map old bus numbers to new ones
+function mapBusNumber(busNumber) {
+    if (!busNumber) return busNumber;
+    const str = String(busNumber);
+    if (str === '10') return '11';
+    if (str === '9') return '13';
+    if (str === '4') return '10';
+    if (str === '6') return '12';
+    return str;
+}
 
 export default StudentPage;
