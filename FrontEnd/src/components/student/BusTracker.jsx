@@ -86,21 +86,31 @@ const BusTracker = ({ buses, isTracking = false, initialBus = null, onBackToList
         };
     }, []); // Only on mount
 
+    // Poll student location every 10 seconds instead of continuous tracking
+    // This reduces map re-renders and improves battery life
     useEffect(() => {
         if (!navigator.geolocation) return;
 
-        const watchId = navigator.geolocation.watchPosition(
-            (position) => {
-                setStudentLocation({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude
-                });
-            },
-            (error) => console.error('Error tracking student location:', error),
-            { enableHighAccuracy: true }
-        );
+        const getLocation = () => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setStudentLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                },
+                (error) => console.error('Error tracking student location:', error),
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+            );
+        };
 
-        return () => navigator.geolocation.clearWatch(watchId);
+        // Get initial location
+        getLocation();
+
+        // Update every 10 seconds
+        const intervalId = setInterval(getLocation, 10000);
+
+        return () => clearInterval(intervalId);
     }, []);
 
     useEffect(() => {
