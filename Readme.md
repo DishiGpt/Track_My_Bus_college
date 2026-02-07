@@ -1,169 +1,248 @@
-# Track My Bus - College Bus Tracking System
+# 🚌 Track My Bus - College Bus Tracking System
 
-A comprehensive bus tracking application built with React and Vite, featuring real-time GPS tracking with Google Maps integration. The system supports four user roles: **Admin**, **Coordinator**, **Driver**, and **Student**.
+> **A comprehensive real-time bus tracking application for college transportation management, enabling students to track buses live on Google Maps.**
+
+---
+
+## 🌐 Live Demo
+
+<div align="center">
+
+### 🔗 **[bus.codeflayers.tech](https://bus.codeflayers.tech)**
+
+[![Live Status](https://img.shields.io/badge/Status-Live-brightgreen?style=for-the-badge)](https://bus.codeflayers.tech)
+[![Website](https://img.shields.io/badge/Website-bus.codeflayers.tech-blue?style=for-the-badge&logo=google-chrome)](https://bus.codeflayers.tech)
+
+</div>
+
+---
 
 ## 📋 System Overview
 
-### User Roles & Permissions
+A full-stack bus tracking application built with **React + Vite** frontend and **Node.js + Express** backend, featuring:
+- **Real-time GPS tracking** with Google Maps integration
+- **WebSocket communication** via Socket.io for live updates
+- **OTP-based authentication** using Twilio
+- **Android support** via Capacitor
+- **Four user roles**: Admin, Coordinator, Driver, and Student
 
-#### 1. **Admin**
+---
+
+## 🎯 User Roles & Permissions
+
+### 1. 👨‍💼 Admin
 - Complete control over the entire system
 - View analytics and dashboards for all buses and routes
-- Manage students (add/remove)
-- Manage coordinators (add/delete)
-- Manage drivers (add/delete)
+- Manage students, coordinators, and drivers
 - Monitor all bus activities in real-time
 
-#### 2. **Coordinator**
-- Only one coordinator role: **Raj Singh**
-- Language switching: English and Hindi
+### 2. 🧑‍✈️ Coordinator
 - Add and remove drivers
 - Set and modify bus routes
 - Manage route assignments to buses
-- Control and coordinate all driver activities
 
-#### 3. **Driver**
+### 3. 🚗 Driver
 - Turn GPS tracking on/off
 - View assigned route with waypoints
 - Real-time location sharing with the system
-- See current position on the map
-- Navigate through the assigned route
 
-#### 4. **Student**
-- View list of available buses
+### 4. 🎓 Student
 - Track buses in real-time on Google Maps
-- See live bus location
-- View route details and scheduled stops with times
-- See estimated time of arrival (ETA) for upcoming stops
+- View route details and scheduled stops
+- See estimated time of arrival (ETA)
 - Call driver directly from the app
-- Switch between different buses to track
-
----
-
-## 🎯 Student Features & Workflow
-
-### Bus Tracking Flow
-
-1. **Bus List View**
-   - Student logs in and sees a list of all available buses for today
-   - Each bus card displays:
-     - Bus number
-     - Route name
-     - Driver name
-     - Departure time
-     - Live/Offline status indicator
-
-2. **Bus Selection & Modal**
-   - Click on any bus card
-   - Modal popup appears with detailed bus information:
-     - Driver information and contact
-     - Route details
-     - Scheduled stops
-     - Capacity
-     - Tracking status
-   - Click **"Track My Bus"** button to start tracking
-
-3. **Real-Time Map Tracking**
-   - Directly opens the mapping interface
-   - Shows Google Maps with:
-     - **Bus Location**: Live GPS position (when driver has GPS enabled)
-     - **Student Location**: Current student position
-     - **Route Stops**: All waypoints with color coding:
-       - ✅ Green: Reached stops (confirmed arrivals)
-       - ⚪ Gray: Upcoming stops
-     - **Distance Indicator**: Distance between student and bus
-     - **Live Badge**: Shows "LIVE" when GPS is active, "OFFLINE" when inactive
-
-4. **Stop Timeline**
-   - Displays route progress: "X/Y completed"
-   - Each stop shows:
-     - **Stop Name**
-     - **Status Badges**:
-       - "Start" for the first stop
-       - "Reached" for confirmed arrived stops (from driver's actual data)
-       - "Current Location" for the bus's nearest stop
-       - "End" for the final stop
-     - **Time Display**:
-       - **When Offline**: Shows scheduled time from database (e.g., "8:00 AM")
-       - **When Live**: Shows ETA in minutes (e.g., "~5 min") based on distance
-       - **When Reached**: Shows actual arrival time from driver's data
-       - **Current Stop**: Shows "Now"
-
-5. **Back & Switch Buses**
-   - Click the **back arrow button** (←) in the header
-   - Returns to bus list
-   - Select a different bus to track
-   - Seamlessly switches tracking between buses
-
-6. **Driver Contact**
-   - Click the **phone button** to call the driver
-   - Direct integration with device phone capabilities
-
----
-
-## 🗺️ Real-Time Tracking Logic
-
-### Stop Status Determination
-
-**Bus Status is determined by:**
-1. **GPS Location-Based** (if driver has GPS enabled)
-   - Compares bus GPS coordinates with stop waypoints
-   - Determines proximity to nearest stop
-2. **Actual Arrival Logs** (from stopArrivals data)
-   - Only stops in the stopArrivals array show as "Reached"
-   - Shows actual arrival time from driver's data
-
-### Time Display Logic
-
-| Scenario | Display |
-|----------|---------|
-| Bus is OFFLINE | Scheduled time from database (e.g., "8:15 AM") |
-| Bus is LIVE, stop upcoming | ETA in minutes (e.g., "~8 min") |
-| Bus at current stop | "Now" |
-| Bus passed stop (GPS-based) | "Passed" |
-| Stop in stopArrivals log | Actual arrival time (e.g., "8:15 AM") |
-
-### Key Data Sources
-
-- **Scheduled Times**: Route.waypoints[].scheduledTime (from seed.js database)
-- **Live Location**: Driver's GPS coordinates (updated via WebSocket)
-- **Arrival Confirmations**: stopArrivals array (driven by driver's location data)
 
 ---
 
 ## 🏗️ Project Structure
 
 ```
-FrontEnd/
-├── src/
-│   ├── components/
-│   │   └── student/
-│   │       ├── StudentHome.jsx          # Bus list display
-│   │       ├── BusDetails.jsx           # (Legacy - deprecated)
-│   │       ├── BusTracker.jsx           # Tracking manager
-│   │       └── BusTrackingView.jsx      # Map interface
-│   ├── pages/
-│   │   └── StudentPage.jsx              # Main student page
-│   ├── hooks/
-│   │   └── useAuth.js                   # Authentication hook
-│   ├── utils/
-│   │   └── api.js                       # API client
-│   └── context/
-│       └── AuthContext.jsx              # Auth state management
+Track_My_Bus/
+├── 📁 BackEnd/                      # Node.js + Express API Server
+│   ├── src/
+│   │   ├── controllers/             # Request handlers (8 files)
+│   │   │   ├── admin.controller.js
+│   │   │   ├── auth.controller.js
+│   │   │   ├── broadcast.controller.js
+│   │   │   ├── bus.controller.js
+│   │   │   ├── coordinator.controller.js
+│   │   │   ├── driver.controller.js
+│   │   │   ├── route.controller.js
+│   │   │   └── student.controller.js
+│   │   ├── middleware/              # Auth & error handling (2 files)
+│   │   │   ├── auth.middleware.js
+│   │   │   └── errorHandler.middleware.js
+│   │   ├── models/                  # MongoDB schemas (6 files)
+│   │   │   ├── Analytics.model.js
+│   │   │   ├── Broadcast.model.js
+│   │   │   ├── Bus.model.js
+│   │   │   ├── OTP.model.js
+│   │   │   ├── Route.model.js
+│   │   │   └── User.model.js
+│   │   ├── routes/                  # API endpoints (8 files)
+│   │   │   ├── admin.routes.js
+│   │   │   ├── auth.routes.js
+│   │   │   ├── broadcast.routes.js
+│   │   │   ├── bus.routes.js
+│   │   │   ├── coordinator.routes.js
+│   │   │   ├── driver.routes.js
+│   │   │   ├── route.routes.js
+│   │   │   └── student.routes.js
+│   │   ├── scripts/
+│   │   │   └── seed.js              # Database seeding
+│   │   ├── utils/                   # Utility functions (3 files)
+│   │   │   ├── jwt.js
+│   │   │   ├── otp.utils.js
+│   │   │   └── validation.js
+│   │   └── server.js                # Main server entry point
+│   └── package.json
 │
-BackEnd/
-├── src/
-│   ├── models/
-│   │   ├── Route.model.js               # Route schema with waypoints
-│   │   └── User.model.js                # User model
-│   ├── controllers/
-│   │   ├── bus.controller.js            # Bus endpoints
-│   │   └── driver.controller.js         # Driver GPS/location endpoints
-│   ├── routes/
-│   ├── scripts/
-│   │   └── seed.js                      # Database seeding with stop times
-│   └── utils/
+├── 📁 FrontEnd/                     # React + Vite Application
+│   ├── src/
+│   │   ├── components/              # React components (16 files)
+│   │   │   ├── admin/               # Admin dashboard (7 files)
+│   │   │   │   ├── AdminAnalytics.jsx
+│   │   │   │   ├── BroadcastNotification.jsx
+│   │   │   │   ├── BusManagement.jsx
+│   │   │   │   ├── CoordinatorManagement.jsx
+│   │   │   │   ├── DriverManagement.jsx
+│   │   │   │   ├── RouteManagement.jsx
+│   │   │   │   └── StudentManagement.jsx
+│   │   │   ├── common/              # Shared components (1 file)
+│   │   │   │   └── GoogleMapView.jsx
+│   │   │   ├── coordinator/         # Coordinator components (3 files)
+│   │   │   │   ├── BusManagement.jsx
+│   │   │   │   ├── DriverManagement.jsx
+│   │   │   │   └── RouteManagement.jsx
+│   │   │   └── student/             # Student tracking (5 files)
+│   │   │       ├── BusDetails.jsx
+│   │   │       ├── BusTracker.jsx
+│   │   │       ├── BusTrackingView.jsx
+│   │   │       ├── StudentHome.jsx
+│   │   │       └── TripDetailsCard.jsx
+│   │   ├── pages/                   # Main page components (7 files)
+│   │   │   ├── AdminPage.jsx
+│   │   │   ├── CoordinatorPage.jsx
+│   │   │   ├── DriverPage.jsx
+│   │   │   ├── LandingPage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── SignUpPage.jsx
+│   │   │   └── StudentPage.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx      # Auth state management
+│   │   ├── hooks/
+│   │   │   └── useAuth.js           # Authentication hook
+│   │   ├── utils/
+│   │   │   ├── api.js               # API client
+│   │   │   └── locationService.js   # Location utilities
+│   │   └── styles/                  # CSS stylesheets
+│   ├── android/                     # Capacitor Android project
+│   ├── public/                      # Static assets
+│   └── package.json
+│
+├── 📄 LICENSE                       # MIT License
+└── 📄 Readme.md
 ```
+
+---
+
+## 🔧 Tech Stack
+
+### Frontend
+| Technology           | Purpose                 |
+| -------------------- | ----------------------- |
+| **React 19**         | UI Framework            |
+| **Vite 7**           | Build Tool & Dev Server |
+| **React Router DOM** | Client-side routing     |
+| **Google Maps API**  | Map integration         |
+| **Socket.io Client** | Real-time communication |
+| **Tailwind CSS**     | Styling                 |
+| **Axios**            | HTTP requests           |
+| **Capacitor**        | Native Android support  |
+
+### Backend
+| Technology             | Purpose               |
+| ---------------------- | --------------------- |
+| **Node.js**            | Runtime environment   |
+| **Express 5**          | Web framework         |
+| **MongoDB + Mongoose** | Database              |
+| **Socket.io**          | WebSocket server      |
+| **JWT**                | Authentication tokens |
+| **Twilio**             | OTP SMS services      |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18 or higher)
+- MongoDB (local or Atlas)
+- npm or yarn
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd Track_My_Bus
+   ```
+
+2. **Setup Backend**
+   ```bash
+   cd BackEnd
+   npm install
+   ```
+   
+   Create a `.env` file:
+   ```env
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/track-my-bus
+   JWT_SECRET=your_jwt_secret
+   TWILIO_ACCOUNT_SID=your_twilio_sid
+   TWILIO_AUTH_TOKEN=your_twilio_token
+   TWILIO_PHONE_NUMBER=your_twilio_phone
+   ```
+
+3. **Setup Frontend**
+   ```bash
+   cd ../FrontEnd
+   npm install
+   ```
+   
+   Create a `.env` file:
+   ```env
+   VITE_API_URL=http://localhost:5000
+   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   ```
+
+### Running the Application
+
+**Start Backend (Development):**
+```bash
+cd BackEnd
+npm run dev
+```
+
+**Start Frontend (Development):**
+```bash
+cd FrontEnd
+npm run dev
+```
+
+---
+
+## 📱 Android App
+
+The app supports native Android deployment via Capacitor.
+
+```bash
+cd FrontEnd
+npm run build
+npx cap sync android
+npx cap open android
+```
+
+See `FrontEnd/ANDROID_SETUP.md` for detailed instructions.
 
 ---
 
@@ -171,61 +250,107 @@ BackEnd/
 
 ### WebSocket Events
 
-**Driver Side:**
-- Emits location updates with stopArrivals data
+| Event             | Direction       | Description            |
+| ----------------- | --------------- | ---------------------- |
+| `location-update` | Server → Client | Bus location updates   |
+| `driver-location` | Driver → Server | Driver GPS coordinates |
 
-**Student Side:**
-- Listens to `location-update` events
-- Receives bus location and stop arrival confirmations
-- Updates map in real-time
+### GPS Tracking Flow
+1. Driver enables GPS tracking
+2. Location updates sent every 10 seconds
+3. Server broadcasts to subscribed students
+4. Map updates in real-time
 
 ---
 
-## 📊 Stop Times in Database
+## 🗺️ Real-Time Tracking Logic
 
-All scheduled stop times are stored in the seed.js file under Route.waypoints:
+### Stop Status Display
 
-```javascript
-waypoints: [
-  { name: 'Tekri', scheduledTime: '8:00 AM', latitude: 24.5700, longitude: 73.6800, order: 1 },
-  { name: 'Udaipole', scheduledTime: '8:02 AM', latitude: 24.5750, longitude: 73.6820, order: 2 },
-  // ... more stops
-]
+| Scenario                       | Display                      |
+| ------------------------------ | ---------------------------- |
+| Bus is **OFFLINE**             | Scheduled time from database |
+| Bus is **LIVE**, stop upcoming | ETA in minutes               |
+| Bus at current stop            | "Now"                        |
+| Bus passed stop                | "Passed"                     |
+
+### Color Indicators
+- ✅ **Green**: Reached stops
+- ⚪ **Gray**: Upcoming stops
+- 🔵 **Blue**: Current bus location
+- 📍 **Red**: Student location
+
+---
+
+## 📊 API Endpoints
+
+### Authentication
+- `POST /api/auth/send-otp` - Send OTP to phone
+- `POST /api/auth/verify-otp` - Verify OTP and login
+
+### Buses
+- `GET /api/buses` - List all buses
+- `GET /api/buses/:id` - Get bus details
+
+### Routes
+- `GET /api/routes` - List all routes
+- `GET /api/routes/:id` - Get route with waypoints
+
+---
+
+## 🚀 Key Features
+
+| Feature                   | Description                                 |
+| ------------------------- | ------------------------------------------- |
+| ✅ Dynamic Bus Tracking    | Real-time GPS position updates              |
+| ✅ Stop Status Logic       | Shows "Reached" for confirmed arrivals      |
+| ✅ ETA Calculation         | Calculates remaining time based on distance |
+| ✅ Bus Switching           | Seamlessly switch between tracking buses    |
+| ✅ Live/Offline Indication | Shows connection status                     |
+| ✅ Driver Contact          | Direct calling from the app                 |
+| ✅ Android Native App      | Capacitor-based mobile app                  |
+
+---
+
+## 🔐 Security Features
+
+- **JWT-based authentication**
+- **OTP verification** for secure login
+- **Role-based access control**
+- **CORS protection**
+
+---
+
+## 📝 Environment Variables
+
+### Backend (.env)
+```env
+PORT=5000
+MONGODB_URI=<mongodb_connection_string>
+JWT_SECRET=<your_secret_key>
+TWILIO_ACCOUNT_SID=<twilio_sid>
+TWILIO_AUTH_TOKEN=<twilio_token>
+TWILIO_PHONE_NUMBER=<twilio_phone>
 ```
 
-These times are displayed to students when the bus is offline or as reference points for ETA calculations.
+### Frontend (.env)
+```env
+VITE_API_URL=<backend_url>
+VITE_GOOGLE_MAPS_API_KEY=<google_maps_api_key>
+```
 
 ---
 
-## 🚀 Key Features Implemented
+## 📄 License
 
-✅ **Dynamic Bus Tracking** - Real-time GPS position updates
-✅ **Stop Status Logic** - Only shows "Reached" for confirmed arrivals
-✅ **Scheduled Times** - Displays times from database
-✅ **ETA Calculation** - Calculates remaining time based on distance
-✅ **Popup Modal Flow** - Bus selection via modal → Direct tracking
-✅ **Bus Switching** - Go back button to switch between buses
-✅ **Live/Offline Indication** - Shows connection status
-✅ **Driver Contact** - Direct calling from the app
-✅ **Distance Indicator** - Shows distance between student and bus
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## 🔧 Tech Stack
+<div align="center">
 
-- **Frontend**: React + Vite
-- **Maps**: Google Maps API
-- **Real-time**: Socket.io
-- **Backend**: Node.js + Express
-- **Database**: MongoDB
-- **Styling**: Tailwind CSS + Custom CSS
+### 🌐 **Live at: [bus.codeflayers.tech](https://bus.codeflayers.tech)**
 
----
+Made with ❤️ for better college transportation
 
-## 📝 Notes
-
-- Bus status based on GPS location AND actual arrival confirmations
-- Times automatically adjust based on live tracking
-- Static stop times shown when GPS is unavailable
-- All data updates in real-time via WebSocket
-- Student location tracked for distance calculation
+</div>
